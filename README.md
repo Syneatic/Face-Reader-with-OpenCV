@@ -2,24 +2,17 @@
 
 This script is to detect the face from a picture and find the different landmarks of the face while determining the colour of the different landmarks.
 
-Table of contents:
-
-Disclaimer
-General Info
-Screenshots
-Setup
-Features
-FAQ
-
-Disclaimer
+## Disclaimer
 As it is using the OpenCV plus Unity (free version) in the Unity Asset Store, it does not use the latest version of OpenCV codes(currently Version 1.7.1 - January 24, 2019).
 
 Since it is converted from Python to C#. there are little to none tutorials or help for OpenCV for C#.
 
 Additionally, some Haarcascade are not in the Unity Package so it needs to be added in manually.
-Link to the GitHub to download the Haarcascades: https://github.com/opencv/opencv/tree/master/data/haarcascades
+Link to the GitHub to download the Haarcascades: 
 
-General Information
+[GithubOpenCV](https://github.com/opencv/opencv/tree/master/data/haarcascades)
+
+## General Information
 
 It uses Haarcascade which is a Text Asset that automatically detects parts of an image based on its scale in image and location.
 
@@ -27,14 +20,14 @@ In this research it help finds the colour and position of the skin tone, eyes, l
 
 It checks if the person in the photo has any hair on the top of his/ her head.
 
-Screenshots
+## Screenshots
 
-Examples of Photos that can work using OpenCV:
-Colour Representation: 
-Red = Skin Colour
-White = Mouth Detection
-Pink = Hair Detection
-Bright Blue = Eye colour
+##### Examples of Photos that can work using OpenCV:
+##### Colour Representation: 
+4# Red = Skin Colour
+##### White = Mouth Detection
+##### Pink = Hair Detection
+##### Bright Blue = Eye colour
 
 Best way to show face for most accurate scan:
 Face is straight
@@ -42,11 +35,9 @@ Smile (Recommend: Do not show teeth)
 Look at the camera
 Is not too far nor too near to the camera, just right the face is covering the entire screen
 
+![Screenshot 2023-01-13 140350](https://user-images.githubusercontent.com/94235882/212593937-7e9d99f7-4f21-4120-89dc-2529764c6623.png)
 
-
-
-
-
+![Screenshot 2023-01-13 141838](https://user-images.githubusercontent.com/94235882/212593942-ccce04bf-3970-4856-af41-42cf68f49018.png)
 
 Examples that cannot use to detect the faces:
 Worst way to detect face:
@@ -55,7 +46,9 @@ Neither eyes are open
 The person is too far away or too close to the camera
 The person is smiling (sometimes it works and doesn’t)
 
-Setting up:
+![New Project](https://user-images.githubusercontent.com/94235882/212596085-b231072c-cdf0-4fc4-8cd5-d26862077ecc.png)
+
+Installation:
 
 Script (UI Face Detection)
 Photo of person
