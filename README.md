@@ -24,7 +24,7 @@ It checks if the person in the photo has any hair on the top of his/ her head.
 
 ##### Examples of Photos that can work using OpenCV:
 ##### Colour Representation: 
-4# Red = Skin Colour
+##### Red = Skin Colour
 ##### White = Mouth Detection
 ##### Pink = Hair Detection
 ##### Bright Blue = Eye colour
@@ -48,23 +48,22 @@ The person is smiling (sometimes it works and doesn’t)
 
 ![New Project](https://user-images.githubusercontent.com/94235882/212596085-b231072c-cdf0-4fc4-8cd5-d26862077ecc.png)
 
-Installation:
-
+## Installation:
 Script (UI Face Detection)
-Photo of person
+Photo of a person
 Eye Haarcascade (haarcascade_eye.xml)
 Mouth Haarcascade (haarcascade_mcs_mouth.xml)
 Face Haarcascade (haarcascade_frontalface_default.xml)
 
-Installation:
+## Setting up the game"
 
-Download the haarcascade pack
-Download the Asset Package 
-Enable the photo to read/ write in unity inspector
-Add in the according Haarcascade into the unity asset (At the moment place it outside, not in any folder)
-Drag the script into a RawImage UI in a canvas
-Drag the according haarcascade into the designated labels in the script
-Drag the photo into the Texture2D in the script
+1. Download the haarcascade pack
+2. Download the Asset Package 
+3. Enable the photo to read/ write in unity inspector
+4. Add in the according Haarcascade into the unity asset (At the moment place it outside, not in any folder)
+6. Drag the script into a RawImage UI in a canvas
+7. Drag the according haarcascade into the designated labels in the script
+8. Drag the photo into the Texture2D in the script
 
 
 
