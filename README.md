@@ -81,5 +81,6 @@ Face Haarcascade (haarcascade_frontalface_default.xml)
 
 ##Warning when using
 - The values of the colors are in BGR (Blue, Green, Red) and NOT RGB.
+- You cannot turn on the shown region if you want to get the correct values as it will change the results.
 
 
