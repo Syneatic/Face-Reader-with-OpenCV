@@ -12,6 +12,8 @@ Link to the GitHub to download the Haarcascades:
 
 [GithubOpenCV](https://github.com/opencv/opencv/tree/master/data/haarcascades)
 
+It for some reason recommend to use BGR (Blue, Green, Red) instead of the normal RGB value which I change accordingly.
+
 ## General Information
 
 It uses Haarcascade which is a Text Asset that automatically detects parts of an image based on its scale in image and location.
