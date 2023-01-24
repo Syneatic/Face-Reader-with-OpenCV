@@ -321,15 +321,17 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1435683967}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ed2ce97fc6f4cbc4d94f9fe230d92537, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sample: {fileID: 2800000, guid: bd8d839129a6cc5459688bb25a96d2d1, type: 3}
+  sample: {fileID: 2800000, guid: ce160928155f9c3479186c5ccdecc48b, type: 3}
   faces: {fileID: 0}
   eyes: {fileID: 0}
   mouth: {fileID: 0}
+  isRegionOn: 1
+  showRender: 1
 --- !u!114 &1435683970
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -350,7 +352,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Texture: {fileID: 2800000, guid: 1680d3905fa60b44c829bc2664620844, type: 3}
+  m_Texture: {fileID: 0}
   m_UVRect:
     serializedVersion: 2
     x: 0

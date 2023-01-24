@@ -6,7 +6,10 @@ using UnityEngine.UI;
 
 public class UIFaceDetector : MonoBehaviour
 {
-    #region Variables 
+	#region Variables 
+
+	
+
     public Texture2D sample;
 	public TextAsset faces;
 	public TextAsset eyes;
@@ -22,6 +25,9 @@ public class UIFaceDetector : MonoBehaviour
 	private CascadeClassifier cascadeMouth;
 
 	public bool isRegionOn;
+	public bool showRender;
+
+	private int avgBGRSkin;
 	// The bounding box around the face
 	OpenCvSharp.Rect faceBoundingBox;
     #endregion
@@ -66,8 +72,12 @@ public class UIFaceDetector : MonoBehaviour
 			var grayg = cropped_Image.CvtColor(ColorConversionCodes.BGR2GRAY);
 			Cv2.EqualizeHist(grayg, grayg);
 
-			OpenCvSharp.Rect[] rawEyes = cascadeEyes.DetectMultiScale(grayg, 2.5, 3);
+            // Cropping the mask into a new mat for the eye
+            OpenCvSharp.Rect[] rawEyes = cascadeEyes.DetectMultiScale(grayg, 2.5, 3, HaarDetectionType.DoRoughSearch);
 
+			// Make a new mask for the cropped image
+			// Mask
+			// Cropping the mask into a new mat for the mouth
 			OpenCvSharp.Rect[] rawMouth = cascadeMouth.DetectMultiScale(grayg, 1.1, 3, HaarDetectionType.FindBiggestObject);
 
 			OpenCvSharp.Rect[] rawHair = cascadeFaces.DetectMultiScale(grayg, 1.1, 6, HaarDetectionType.ScaleImage);
@@ -109,10 +119,11 @@ public class UIFaceDetector : MonoBehaviour
 			Debug.Log("The face is: " + cropped_Image.Width + ", " + cropped_Image.Height);
 			Debug.Log("The pixel size for face is: (0, 0) , (" + coords[1] + " ," + coords[0] + ")\n _______________________________");
 
-            #region eyesAndSkin
+			#region eyesAndSkin
 
-            Mat mask = Mat.Zeros(cropped_Image.Rows, cropped_Image.Cols, cropped_Image.Type());
+			Mat mask = Mat.Zeros(cropped_Image.Rows, cropped_Image.Cols, cropped_Image.Type());
 			Mat eyeMask = Mat.Zeros(cropped_Image.Rows, cropped_Image.Cols, image.Type());
+
 			foreach (var eyesRect in rawEyes)
 			{
 				var grayEyes = new Mat(grayg, eyesRect);
@@ -120,93 +131,103 @@ public class UIFaceDetector : MonoBehaviour
 				{
 					grayEyes = grayEyes.Resize(eyesSize);
 				}
-				Cv2.Circle((InputOutputArray)mask, eyesRect.Center.X, (eyesRect.Center.Y + (eyesRect.Center.Y / 5)), 3, Scalar.White, -1);
 
 				Cv2.Circle((InputOutputArray)eyeMask, eyesRect.Center.X, eyesRect.Center.Y, 1, Scalar.White, -1);
 
-				//Show the Region Detected
-				Cv2.Circle((InputOutputArray)cropped_Image, eyesRect.Center.X, (eyesRect.Center.Y + (eyesRect.Center.Y / 5)), 3, Scalar.Red, -1);
-				Cv2.Circle((InputOutputArray)cropped_Image, eyesRect.Center.X, eyesRect.Center.Y, 1, Scalar.LightSteelBlue, -1);
-			}
 
-			Mat facemasked_image = new Mat();
 
-			// Apply the mask to the image
-			Cv2.BitwiseAnd(cropped_Image, mask, facemasked_image);
+				Mat eyemasked_image = new Mat();
 
-			int[] totalBGR = new int[3] { 0, 0, 0 };
-			int skinPixelCount = 0;
+				// Apply the mask to the image
+				Cv2.BitwiseAnd(cropped_Image, eyeMask, eyemasked_image);
 
-			for (int i = 0; i < masked_image.Rows; i++)
-			{
-				for (int j = 0; j < masked_image.Cols; j++)
+				int[] eyecoords = new int[2] { 0, 0 };
+
+				int[] totalBGR_eye = new int[3] { 0, 0, 0 };
+
+				int eyePixelCount = 0;
+				// Represent the Y-axis
+				for (int i = 0; i < eyemasked_image.Rows; i++)
 				{
-					Vec3b pixel = mask.At<Vec3b>(i, j);
-					Vec3b newpixel = facemasked_image.At<Vec3b>(i, j);
-					// Check if the BGR values are within the skin tone range
-					if (pixel[0] == 255)
+					// Represents the X-axis
+					for (int j = 0; j < eyemasked_image.Cols; j++)
 					{
-						// Add the BGR values to the total
-						totalBGR[0] += newpixel[0];
-						totalBGR[1] += newpixel[1];
-						totalBGR[2] += newpixel[2];
+						Vec3b pixel = eyeMask.At<Vec3b>(i, j);
+						Vec3b newpixel = eyemasked_image.At<Vec3b>(i, j);
+						// Check if the BGR values are within the eye tone range
+						if (pixel[0] == 255)
+						{
+							// Add the BGR values to the total
+							totalBGR_eye[0] += (int)newpixel[0];
+							totalBGR_eye[1] += (int)newpixel[1];
+							totalBGR_eye[2] += (int)newpixel[2];
 
-						// Increment the skin pixel count
-						skinPixelCount++;
+							// Increment the eye pixel count
+							eyePixelCount++;
+						}
+
+
 					}
 				}
-			}
+				// Calculate the average eye color
+				int[] avgBGR_eye = new int[3] { totalBGR_eye[0] / eyePixelCount, totalBGR_eye[1] / eyePixelCount, totalBGR_eye[2] / eyePixelCount };
+				// Print the result to the console
+				Debug.Log("The average for eye color is: (B: " + avgBGR_eye[0] + ", G: " + avgBGR_eye[1] + ", R: " + avgBGR_eye[2] + ")\n _______________________________");
 
-			// Calculate the average skin tone color
-			int[] avgBGR = new int[3] { totalBGR[0] / skinPixelCount, totalBGR[1] / skinPixelCount, totalBGR[2] / skinPixelCount };
+				Cv2.Circle((InputOutputArray)mask, eyesRect.Center.X, (eyesRect.Center.Y + (eyesRect.Center.Y / 5)), 3, Scalar.White, -1);
+				Mat facemasked_image = new Mat();
 
-			// Print the result to the console
-			Debug.Log("The average skin tone color is: (B: " + avgBGR[0] + ", G: " + avgBGR[1] + ", R: " + avgBGR[2] + ")\n _______________________________");
+				// Apply the mask to the image
+				Cv2.BitwiseAnd(cropped_Image, mask, facemasked_image);
 
-			Mat eyemasked_image = new Mat();
+				int[] totalBGR = new int[3] { 0, 0, 0 };
+				int skinPixelCount = 0;
 
-			// Apply the mask to the image
-			Cv2.BitwiseAnd(cropped_Image, eyeMask, eyemasked_image);
-
-			int[] eyecoords = new int[2] { 0, 0 };
-
-			int[] totalBGR_eye = new int[3] { 0, 0, 0 };
-
-			int eyePixelCount = 0;
-			// Represent the Y-axis
-			for (int i = 0; i < eyemasked_image.Rows; i++)
-			{
-				// Represents the X-axis
-				for (int j = 0; j < eyemasked_image.Cols; j++)
+				for (int i = 0; i < masked_image.Rows; i++)
 				{
-					Vec3b pixel = eyeMask.At<Vec3b>(i, j);
-					Vec3b newpixel = eyemasked_image.At<Vec3b>(i, j);
-					// Check if the BGR values are within the eye tone range
-					if (pixel[0] == 255)
+					for (int j = 0; j < masked_image.Cols; j++)
 					{
-						// Add the BGR values to the total
-						totalBGR_eye[0] += (int)newpixel[0];
-						totalBGR_eye[1] += (int)newpixel[1];
-						totalBGR_eye[2] += (int)newpixel[2];
+						Vec3b pixel = mask.At<Vec3b>(i, j);
+						Vec3b newpixel = facemasked_image.At<Vec3b>(i, j);
+						// Check if the BGR values are within the skin tone range
+						if (pixel[0] == 255)
+						{
+							// Add the BGR values to the total
+							totalBGR[0] += newpixel[0];
+							totalBGR[1] += newpixel[1];
+							totalBGR[2] += newpixel[2];
 
-						// Increment the eye pixel count
-						eyePixelCount++;
+							// Increment the skin pixel count
+							skinPixelCount++;
+						}
 					}
-
-
 				}
+
+				// Calculate the average skin tone color
+				int[] avgBGR = new int[3] { totalBGR[0] / skinPixelCount, totalBGR[1] / skinPixelCount, totalBGR[2] / skinPixelCount };
+
+				// Print the result to the console
+				Debug.Log("The average skin tone color is: (B: " + avgBGR[0] + ", G: " + avgBGR[1] + ", R: " + avgBGR[2] + ")\n _______________________________");
+
+				avgBGRSkin = avgBGR[2];
+				if (isRegionOn == true)
+				{
+					//Show the Region Detected
+					Cv2.Circle((InputOutputArray)cropped_Image, eyesRect.Center.X, (eyesRect.Center.Y + (eyesRect.Center.Y / 5)), 3, Scalar.Red, -1);
+					Cv2.Circle((InputOutputArray)cropped_Image, eyesRect.Center.X, eyesRect.Center.Y, 1, Scalar.LightSteelBlue, -1);
+				}
+
+
 			}
-			// Calculate the average eye color
-			int[] avgBGR_eye = new int[3] { totalBGR_eye[0] / eyePixelCount, totalBGR_eye[1] / eyePixelCount, totalBGR_eye[2] / eyePixelCount };
-			// Print the result to the console
-			Debug.Log("The average for eye color is: (B: " + avgBGR_eye[0] + ", G: " + avgBGR_eye[1] + ", R: " + avgBGR_eye[2] + ")\n _______________________________");
 
-            #endregion
 
-            #region mouthRegion
 
-            // Creating a mask speciacally for the mouth with the newlly cropped image
-            Mat mouthMask = Mat.Zeros(cropped_Image.Rows, cropped_Image.Cols, cropped_Image.Type());
+			#endregion
+
+			#region mouthRegion
+
+			// Creating a mask speciacally for the mouth with the newlly cropped image
+			Mat mouthMask = Mat.Zeros(cropped_Image.Rows, cropped_Image.Cols, cropped_Image.Type());
 
 			foreach (var mouthRect in rawMouth)
 			{
@@ -267,72 +288,86 @@ public class UIFaceDetector : MonoBehaviour
             Mat hairmask = Mat.Zeros(cropped_Image.Rows, cropped_Image.Cols, cropped_Image.Type());
 
 			//Checking for every face and finding the closest forehead position
-			foreach (var hairRect in rawHair)
-			{
-				var grayHair = new Mat(grayg, hairRect);
-				if (hairSize.Width > 0 && hairSize.Height > 0)
+			if (rawHair != null)
+            {
+				foreach (var hairRect in rawHair)
 				{
-					grayHair = grayHair.Resize(hairSize);
-				}
-				Cv2.Rectangle((InputOutputArray)hairmask, new Point(hairmask.Width /5 * 2, hairmask.Height / 40), new Point(hairmask.Width / 5 * 3, hairmask.Height / 40 * 3), Scalar.White, -1);
-
-				Cv2.Rectangle((InputOutputArray)cropped_Image, new Point(hairmask.Width / 5 * 2, hairmask.Height / 40), new Point(hairmask.Width / 5 * 3, hairmask.Height / 40 * 3), Scalar.Pink, -1);
-
-				Mat hairmasked_image = new Mat();
-
-				// Apply the mask to the image
-				Cv2.BitwiseAnd(cropped_Image, hairmask, hairmasked_image);
-
-				int[] totalBGR_hair = new int[3] { 0, 0, 0 };
-
-				int hairPixelCount = 0;
-
-				//Represent the Y-axis
-				for (int i = 0; i < hairmasked_image.Rows; i++)
-				{
-					//Represents the X-axis
-					for (int j = 0; j < hairmasked_image.Cols; j++)
+					var grayHair = new Mat(grayg, hairRect);
+					if (hairSize.Width > 0 && hairSize.Height > 0)
 					{
-						Vec3b pixel = hairmask.At<Vec3b>(i, j);
-						Vec3b newpixel = hairmasked_image.At<Vec3b>(i, j);
-						// Check if the BGR values are within the hair tone range
-						if (pixel[0] == 255)
-						{
-							// Add the BGR values to the total
-							totalBGR_hair[0] += (int)newpixel[0];
-							totalBGR_hair[1] += (int)newpixel[1];
-							totalBGR_hair[2] += (int)newpixel[2];
-							// Increment the hair pixel count
-							hairPixelCount++;
-						}
-
-
+						grayHair = grayHair.Resize(hairSize);
 					}
+					Cv2.Rectangle((InputOutputArray)hairmask, new Point(hairmask.Width / 5 * 2, hairmask.Height / 40), new Point(hairmask.Width / 5 * 3, hairmask.Height / 40 * 3), Scalar.White, -1);
+
+
+
+					Mat hairmasked_image = new Mat();
+
+					// Apply the mask to the image
+					Cv2.BitwiseAnd(cropped_Image, hairmask, hairmasked_image);
+
+					int[] totalBGR_hair = new int[3] { 0, 0, 0 };
+
+					int hairPixelCount = 0;
+
+					//Represent the Y-axis
+					for (int i = 0; i < hairmasked_image.Rows; i++)
+					{
+						//Represents the X-axis
+						for (int j = 0; j < hairmasked_image.Cols; j++)
+						{
+							Vec3b pixel = hairmask.At<Vec3b>(i, j);
+							Vec3b newpixel = hairmasked_image.At<Vec3b>(i, j);
+							// Check if the BGR values are within the hair tone range
+							if (pixel[0] == 255)
+							{
+								// Add the BGR values to the total
+								totalBGR_hair[0] += (int)newpixel[0];
+								totalBGR_hair[1] += (int)newpixel[1];
+								totalBGR_hair[2] += (int)newpixel[2];
+								// Increment the hair pixel count
+								hairPixelCount++;
+							}
+
+
+						}
+					}
+
+					// Calculate the BGR of the hairs average tone 
+					int[] avgBGR_hair = new int[3] { totalBGR_hair[0] / hairPixelCount, totalBGR_hair[1] / hairPixelCount, totalBGR_hair[2] / hairPixelCount };
+
+					// Comparing if the person in the image has hair
+					if (avgBGR_hair[2] - avgBGRSkin > 30 || avgBGR_hair[2] - avgBGRSkin < -30)
+					{
+						Debug.Log("There's hair");
+					}
+					else
+					{
+						Debug.Log("Bald person");
+					}
+
+					Debug.Log("The average for hair color is: (R: " + avgBGR_hair[2] + ", G: " + avgBGR_hair[1] + ", B: " + avgBGR_hair[0] + ")\n _______________________________");
+
+					if (isRegionOn == true)
+					{
+						Cv2.Rectangle((InputOutputArray)cropped_Image, new Point(hairmask.Width / 5 * 2, hairmask.Height / 40), new Point(hairmask.Width / 5 * 3, hairmask.Height / 40 * 3), Scalar.Pink, -1);
+					}
+
 				}
 
-				// Calculate the BGR of the hairs average tone 
-				int[] avgBGR_hair = new int[3] { totalBGR_hair[0] / hairPixelCount, totalBGR_hair[1] / hairPixelCount, totalBGR_hair[2] / hairPixelCount };
-				
-				// Comparing if the person in the image has hair
-				if (avgBGR_hair[0] - avgBGR[0] > 20 || avgBGR_hair[0] - avgBGR[0] < -20)
-                {
-					Debug.Log("There's hair");
-                }
-                else
-                {
-					Debug.Log("Bald person");
-                }
-
-				Debug.Log("The average for hair color is: (R: " + avgBGR_hair[2] + ", G: " + avgBGR_hair[1] + ", B: " + avgBGR_hair[0] + ")\n _______________________________");
 			}
+            else
+            {
+				Debug.Log("The picture cannot be properly scanned");
+            }
 
-            #endregion
+			#endregion
 
-            #region renderPicture
+			#region renderPicture
 
-            // Render texture
+			// Render texture
 			// This render is used for to check the different region being recorded in the correct position
-			 if (isRegionOn == true)
+			if (showRender == true)
             {
 				var texture = OpenCvSharp.Unity.MatToTexture(cropped_Image);
 				var rawImage = gameObject.GetComponent<RawImage>();
