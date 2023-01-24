@@ -67,7 +67,7 @@ Mouth Haarcascade (haarcascade_mcs_mouth.xml)
 
 Face Haarcascade (haarcascade_frontalface_default.xml)
 
-## Setting up the game"
+## Setting up the game
 
 1. Download the haarcascade pack
 2. Download the Asset Package 
@@ -79,7 +79,7 @@ Face Haarcascade (haarcascade_frontalface_default.xml)
 7. Drag the according haarcascade into the designated labels in the script
 8. Drag the photo into the Texture2D in the script
 
-##Warning when using
+## Warning when using
 - The values of the colors are in BGR (Blue, Green, Red) and NOT RGB.
 - You cannot turn on the shown region if you want to get the correct values as it will change the results.
 
