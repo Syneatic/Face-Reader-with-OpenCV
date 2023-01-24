@@ -79,6 +79,7 @@ Face Haarcascade (haarcascade_frontalface_default.xml)
 7. Drag the according haarcascade into the designated labels in the script
 8. Drag the photo into the Texture2D in the script
 
-
+##Warning when using
+- The values of the colors are in BGR (Blue, Green, Red) and NOT RGB.
 
 
